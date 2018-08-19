@@ -732,7 +732,7 @@
     test_task = createDummyFeatures(test, target = "TARGET")
     test_task = makeClassifTask(data = test_task, target = "TARGET")
 
-### 3.1 Making the Learner - XG-Boost
+### 3.2 Modelbuilding (XGBoost)
 
 -   Since there are lots of missing values an XG-Boost will be used.
     Moreover, the learner will be extended in order to use all
@@ -877,7 +877,7 @@
       setNames(fiv, imp$Feature)
     }
 
-### 3.2 Model Tuning
+### 3.3 Model Tuning
 
 -   Now, the model will be tuned.
 
@@ -991,8 +991,10 @@
 
 **Precision, Recall and F1**
 
-Positive Class: 1 (late payment) - For the positive class there is an
-relative error of 40% and an absolute error of 5%.
+-   For the positive class there is an relative error of 40% and an
+    absolute error of 5%.
+
+<!-- -->
 
     precision = posPredValue(r$pred$data$response, r$pred$data$truth, positive="1")
 
@@ -1024,8 +1026,10 @@ relative error of 40% and an absolute error of 5%.
 </tbody>
 </table>
 
-Negative Class: 0 (payment in time) - For the negative class there is an
-relative error of 8% and an absolute error of 1%.
+-   For the negative class there is an relative error of 8% and an
+    absolute error of 1%.
+
+<!-- -->
 
     precision = posPredValue(r$pred$data$response, r$pred$data$truth, positive="0")
 
