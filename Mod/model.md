@@ -391,36 +391,11 @@
 2.1 Missing Values
 ------------------
 
--   Only 55 (16%) columns have no missing values. This has mostly to do
-    with the data aggregation since not every ID appear in the different
-    datasets.
+-   Only 16% of the columns have no missing values. This has mostly to
+    do with the data aggregation since not every ID appear in the
+    different datasets.
 
 <!-- -->
-
-    summarizeColumns(total) %>% 
-      select(na) %>%
-      mutate(na = ifelse(na == 0, "no na", "na")) %>%
-      table() %>%
-      kable("markdown")
-
-<table>
-<thead>
-<tr class="header">
-<th align="left">.</th>
-<th align="right">Freq</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">na</td>
-<td align="right">293</td>
-</tr>
-<tr class="even">
-<td align="left">no na</td>
-<td align="right">55</td>
-</tr>
-</tbody>
-</table>
 
     summarizeColumns(total) %>% 
       select(na) %>%
@@ -448,8 +423,8 @@
 </tbody>
 </table>
 
--   178 (60%) of the variables have 0% to 10% of missing values and only
-    28 (10%) have 70% to 80% of missing values.
+-   60% of the variables have 0% to 10% of missing values and only 28
+    (10%) have 70% to 80% of missing values.
 
 <!-- -->
 
@@ -458,64 +433,9 @@
       mutate(rel.na = na/nrow(total))
 
 
-    as.data.frame(table(cut(rel.na$rel.na, breaks=seq(0, 1, 0.1)))) %>%
-      dplyr::rename(Features = "Var1") %>%
-      kable("markdown")
-
-<table>
-<thead>
-<tr class="header">
-<th align="left">Features</th>
-<th align="right">Freq</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">(0,0.1]</td>
-<td align="right">178</td>
-</tr>
-<tr class="even">
-<td align="left">(0.1,0.2]</td>
-<td align="right">35</td>
-</tr>
-<tr class="odd">
-<td align="left">(0.2,0.3]</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">(0.3,0.4]</td>
-<td align="right">2</td>
-</tr>
-<tr class="odd">
-<td align="left">(0.4,0.5]</td>
-<td align="right">13</td>
-</tr>
-<tr class="even">
-<td align="left">(0.5,0.6]</td>
-<td align="right">20</td>
-</tr>
-<tr class="odd">
-<td align="left">(0.6,0.7]</td>
-<td align="right">17</td>
-</tr>
-<tr class="even">
-<td align="left">(0.7,0.8]</td>
-<td align="right">28</td>
-</tr>
-<tr class="odd">
-<td align="left">(0.8,0.9]</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">(0.9,1]</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
-
     as.data.frame(prop.table(table(cut(rel.na$rel.na, breaks=seq(0, 1, 0.1))))) %>%
-      dplyr::rename(Features = "Var1") %>%
-      kable("markdown")
+        dplyr::rename(Features = "Var1") %>%
+        kable("markdown")
 
 <table>
 <thead>
@@ -683,8 +603,41 @@
 
 ![](model_files/figure-markdown_strict/unnamed-chunk-11-1.png)
 
--   So those values will be replaced with NA, scince the reason for the
-    wrong entry is unknown.
+-   The probability for a positive event (late payment) for clients with
+    days employed &gt; 0 is lower than the prior probability.
+
+<!-- -->
+
+    train %>%
+      filter(DAYS_EMPLOYED > 0) %>% 
+      count(TARGET) %>%
+      mutate(p = n/sum(n)) %>%
+      kable("markdown")
+
+<table>
+<thead>
+<tr class="header">
+<th align="left">TARGET</th>
+<th align="right">n</th>
+<th align="right">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="right">52384</td>
+<td align="right">0.9460035</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="right">2990</td>
+<td align="right">0.0539965</td>
+</tr>
+</tbody>
+</table>
+
+-   So those values will be replaced with NA in order to take this fact
+    into account.
 
 <!-- -->
 
@@ -706,9 +659,7 @@
       scale_color_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-    ## Warning: Removed 55374 rows containing non-finite values (stat_density).
-
-![](model_files/figure-markdown_strict/unnamed-chunk-13-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 
 **AMT\_GOODS\_PRICE**
 
@@ -726,7 +677,7 @@
       scale_fill_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 **bureau\_days\_credit\_update**
 
@@ -744,9 +695,7 @@
       xlim(-2000,0) +
       theme_minimal()
 
-    ## Warning: Removed 46857 rows containing non-finite values (stat_density).
-
-![](model_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
 **DAYS\_BIRTH**
 
@@ -762,7 +711,7 @@
       scale_color_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-16-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-17-1.png)
 
 3 Model Building
 ----------------
@@ -1120,7 +1069,7 @@ relative error of 8% and an absolute error of 1%.
     roc_data = generateThreshVsPerfData(r$pred, measures = list(fpr, tpr, mmce))
     plotROCCurves(roc_data)
 
-![](model_files/figure-markdown_strict/unnamed-chunk-25-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-26-1.png)
 
 4.2 Variable Importance
 -----------------------
@@ -1147,7 +1096,7 @@ relative error of 8% and an absolute error of 1%.
       coord_flip() +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-27-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-28-1.png)
 
 5 Conclusion
 ------------
