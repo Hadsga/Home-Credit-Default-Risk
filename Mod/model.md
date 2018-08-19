@@ -915,7 +915,7 @@ error of about 40% and an absolute error of about 95%.
 - For the negative class (payment in time), there is a relative error of
 about 8% and an absolute error of 1%.
 
-    confusionMatrix(r$pred$data$response, r$pred$data$truth, positive = "1")
+    print(confusionMatrix(r$pred$data$response, r$pred$data$truth, positive = "1"))
 
     ## Confusion Matrix and Statistics
     ## 
