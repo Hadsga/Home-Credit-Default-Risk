@@ -10,15 +10,10 @@
     library(DataExplorer)
     library(gridExtra)
     library(knitr)
-    library(isofor)
     library(reshape)
 
-1 Reading data
---------------
-
--   Loading the data.
-
-<!-- -->
+1 Reading the data
+------------------
 
     load("../Data Wrangling/train_final.Rda")
     load("../Data Wrangling/test_final.Rda")
@@ -27,7 +22,7 @@
 2 Exploratory data analyses
 ---------------------------
 
--   Getting an initial overview on the data.
+-   Getting an initial overview of the data.
 
 <!-- -->
 
@@ -396,8 +391,8 @@
 2.1 Missing Values
 ------------------
 
--   Only 55 columns have no missing values. This has mostly to do with
-    the data aggregation since not every ID appear in the different
+-   Only 55 (16%) columns have no missing values. This has mostly to do
+    with the data aggregation since not every ID appear in the different
     datasets.
 
 <!-- -->
@@ -427,6 +422,152 @@
 </tbody>
 </table>
 
+    summarizeColumns(total) %>% 
+      select(na) %>%
+      mutate(na = ifelse(na == 0, "no na", "na")) %>%
+      table() %>%
+      prop.table() %>%
+      kable("markdown")
+
+<table>
+<thead>
+<tr class="header">
+<th align="left">.</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">na</td>
+<td align="right">0.841954</td>
+</tr>
+<tr class="even">
+<td align="left">no na</td>
+<td align="right">0.158046</td>
+</tr>
+</tbody>
+</table>
+
+-   178 (60%) of the variables have 0% to 10% of missing values and only
+    28 (10%) have 70% to 80% of missing values.
+
+<!-- -->
+
+    rel.na = summarizeColumns(total) %>%
+      select(na) %>%
+      mutate(rel.na = na/nrow(total))
+
+
+    as.data.frame(table(cut(rel.na$rel.na, breaks=seq(0, 1, 0.1)))) %>%
+      dplyr::rename(Features = "Var1") %>%
+      kable("markdown")
+
+<table>
+<thead>
+<tr class="header">
+<th align="left">Features</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(0,0.1]</td>
+<td align="right">178</td>
+</tr>
+<tr class="even">
+<td align="left">(0.1,0.2]</td>
+<td align="right">35</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.2,0.3]</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">(0.3,0.4]</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.4,0.5]</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">(0.5,0.6]</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.6,0.7]</td>
+<td align="right">17</td>
+</tr>
+<tr class="even">
+<td align="left">(0.7,0.8]</td>
+<td align="right">28</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.8,0.9]</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">(0.9,1]</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+
+    as.data.frame(prop.table(table(cut(rel.na$rel.na, breaks=seq(0, 1, 0.1))))) %>%
+      dplyr::rename(Features = "Var1") %>%
+      kable("markdown")
+
+<table>
+<thead>
+<tr class="header">
+<th align="left">Features</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(0,0.1]</td>
+<td align="right">0.6075085</td>
+</tr>
+<tr class="even">
+<td align="left">(0.1,0.2]</td>
+<td align="right">0.1194539</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.2,0.3]</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">(0.3,0.4]</td>
+<td align="right">0.0068259</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.4,0.5]</td>
+<td align="right">0.0443686</td>
+</tr>
+<tr class="even">
+<td align="left">(0.5,0.6]</td>
+<td align="right">0.0682594</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.6,0.7]</td>
+<td align="right">0.0580205</td>
+</tr>
+<tr class="even">
+<td align="left">(0.7,0.8]</td>
+<td align="right">0.0955631</td>
+</tr>
+<tr class="odd">
+<td align="left">(0.8,0.9]</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">(0.9,1]</td>
+<td align="right">0.0000000</td>
+</tr>
+</tbody>
+</table>
+
 2.2 Important variables
 -----------------------
 
@@ -437,15 +578,11 @@
 
     feature_task = makeClassifTask(data = train, target = "TARGET")
 
-    ## Warning in makeTask(type = type, data = data, weights = weights,
-    ## blocking = blocking, : Empty factor levels were dropped for columns:
-    ## NAME_TYPE_SUITE,OCCUPATION_TYPE,FONDKAPREMONT_MODE,HOUSETYPE_MODE,WALLSMATERIAL_MODE,EMERGENCYSTATE_MODE
-
     fv = generateFilterValuesData(feature_task, method = c("information.gain"))
 
     plotFilterValues(fv)
 
-![](model_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-7-1.png)
 
 **TARGET**
 
@@ -505,7 +642,7 @@
 
     grid.arrange(p1, p2, p3)
 
-![](model_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-9-1.png)
 
 **bureau\_days\_credit**
 
@@ -520,7 +657,7 @@
       scale_color_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-9-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
 **Days Employed**
 
@@ -544,7 +681,7 @@
 
     grid.arrange(p4, p5, ncol = 2)
 
-![](model_files/figure-markdown_strict/unnamed-chunk-10-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-11-1.png)
 
 -   So those values will be replaced with NA, scince the reason for the
     wrong entry is unknown.
@@ -571,7 +708,7 @@
 
     ## Warning: Removed 55374 rows containing non-finite values (stat_density).
 
-![](model_files/figure-markdown_strict/unnamed-chunk-12-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-13-1.png)
 
 **AMT\_GOODS\_PRICE**
 
@@ -589,7 +726,7 @@
       scale_fill_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-13-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 
 **bureau\_days\_credit\_update**
 
@@ -609,7 +746,7 @@
 
     ## Warning: Removed 46857 rows containing non-finite values (stat_density).
 
-![](model_files/figure-markdown_strict/unnamed-chunk-14-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-15-1.png)
 
 **DAYS\_BIRTH**
 
@@ -625,7 +762,7 @@
       scale_color_manual(values=c("darkblue", "darkred")) +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-16-1.png)
 
 3 Model Building
 ----------------
@@ -645,9 +782,6 @@
 
     test_task = createDummyFeatures(test, target = "TARGET")
     test_task = makeClassifTask(data = test_task, target = "TARGET")
-
-    ## Warning in makeClassifTask(data = test_task, target = "TARGET"): Target
-    ## column 'TARGET' contains empty factor levels
 
 ### 3.1 Making the Learner - XG-Boost
 
@@ -811,6 +945,7 @@
                                           eta = 0.3))
                                           # Using a large eta for speed (see below).
 
+
     params = makeParamSet(makeIntegerParam("nrounds",lower = 1,upper = 1000),
                           # Using only a few rounds since we have a small eta.  
                           makeIntegerParam("max_depth",lower = 1,upper = 10), 
@@ -849,7 +984,6 @@
 
 <!-- -->
 
-    xgb_tune = readRDS("xgb_tune.rds")
     xgb_tune$x
 
     ## $nrounds
@@ -901,48 +1035,78 @@
 
 <!-- -->
 
-    r = readRDS("r.rds")
     r$aggr[1]
 
     ## acc.test.mean 
     ##     0.9196842
 
-**Confusion Matrix**
+**Precision, Recall and F1**
 
-Let´s take a closer look at the performance by calculating the confusion
-matrix. - For the positive class (late payment), there is a relative
-error of about 40% and an absolute error of about 95%.  
-- For the negative class (payment in time), there is a relative error of
-about 8% and an absolute error of 1%.
+Positive Class: 1 (late payment) - For the positive class there is an
+relative error of 40% and an absolute error of 5%.
 
-    print(confusionMatrix(r$pred$data$response, r$pred$data$truth, positive = "1"))
+    precision = posPredValue(r$pred$data$response, r$pred$data$truth, positive="1")
 
-    ## Confusion Matrix and Statistics
-    ## 
-    ##           Reference
-    ## Prediction      0      1
-    ##          0 845412  70209
-    ##          1   2646   4266
-    ##                                           
-    ##                Accuracy : 0.921           
-    ##                  95% CI : (0.9205, 0.9216)
-    ##     No Information Rate : 0.9193          
-    ##     P-Value [Acc > NIR] : 2.656e-10       
-    ##                                           
-    ##                   Kappa : 0.0924          
-    ##  Mcnemar's Test P-Value : < 2.2e-16       
-    ##                                           
-    ##             Sensitivity : 0.057281        
-    ##             Specificity : 0.996880        
-    ##          Pos Pred Value : 0.617187        
-    ##          Neg Pred Value : 0.923321        
-    ##              Prevalence : 0.080729        
-    ##          Detection Rate : 0.004624        
-    ##    Detection Prevalence : 0.007492        
-    ##       Balanced Accuracy : 0.527080        
-    ##                                           
-    ##        'Positive' Class : 1               
-    ## 
+    recall = sensitivity(r$pred$data$response, r$pred$data$truth, positive="1")
+
+    F1 = (2 * precision * recall) / (precision + recall)
+
+    Performance = cbind(precision,
+                        recall,
+                        F1) %>%
+      kable("markdown")
+
+    Performance
+
+<table>
+<thead>
+<tr class="header">
+<th align="right">precision</th>
+<th align="right">recall</th>
+<th align="right">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.6171875</td>
+<td align="right">0.057281</td>
+<td align="right">0.1048325</td>
+</tr>
+</tbody>
+</table>
+
+Negative Class: 0 (payment in time) - For the negative class there is an
+relative error of 8% and an absolute error of 1%.
+
+    precision = posPredValue(r$pred$data$response, r$pred$data$truth, positive="0")
+
+    recall = sensitivity(r$pred$data$response, r$pred$data$truth, positive="0")
+
+    F1 = (2 * precision * recall) / (precision + recall)
+
+    Performance = cbind(precision,
+                        recall,
+                        F1) %>%
+      kable("markdown")
+
+    Performance
+
+<table>
+<thead>
+<tr class="header">
+<th align="right">precision</th>
+<th align="right">recall</th>
+<th align="right">F1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.9233209</td>
+<td align="right">0.9968799</td>
+<td align="right">0.9586915</td>
+</tr>
+</tbody>
+</table>
 
 **ROC Curve**
 
@@ -956,7 +1120,7 @@ about 8% and an absolute error of 1%.
     roc_data = generateThreshVsPerfData(r$pred, measures = list(fpr, tpr, mmce))
     plotROCCurves(roc_data)
 
-![](model_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-25-1.png)
 
 4.2 Variable Importance
 -----------------------
@@ -968,7 +1132,7 @@ about 8% and an absolute error of 1%.
 
 <!-- -->
 
-    fin_mod = readRDS("fin_mod.rds")
+    fin_mod = mlr::train(lrn_xgb, train_task)
 
     var_imp = getFeatureImportance(fin_mod)
 
@@ -983,7 +1147,7 @@ about 8% and an absolute error of 1%.
       coord_flip() +
       theme_minimal()
 
-![](model_files/figure-markdown_strict/unnamed-chunk-25-1.png)
+![](model_files/figure-markdown_strict/unnamed-chunk-27-1.png)
 
 5 Conclusion
 ------------
